@@ -1,13 +1,23 @@
 from astropy.utils.data import download_file
 from shutil import move
-wordlist = "./hacking/sources/rockyou.txt"
+
+from typing import Union
+from os import PathLike
+
+
+PATH = Union[str, bytes, PathLike[str], PathLike[bytes]]
+url = "https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt"
+wordlist_path: PATH = "./hacking/sources/rockyou.txt"
 
 try:
-	with open(wordlist):
+	with open(wordlist_path):
 		pass
 except FileNotFoundError:
-	download_file("https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt")
-	move('./hacking/rockyou.txt', wordlist)
+	path: str = download_file(url, cache=True)
+	move(path, wordlist_path)
+
+with open(wordlist_path, 'rb') as f:
+	wordlist: list[PATH] = [i.strip(b'\n ') for i in f.readlines()]
 
 '''
 from .network import *

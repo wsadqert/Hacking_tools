@@ -116,7 +116,7 @@ def random_mac_address():
 	print("[+] Adapter is enabled again")
 
 
-def port_scan():
+def port_scan(host: str):
 	init()
 	GREEN: str = Fore.GREEN
 	RESET: str = Fore.RESET
@@ -169,7 +169,6 @@ def port_scan():
 
 		q.join()
 
-	host = input('host: ')
 	main(host, ports)
 	print(f'\rfinished {tuple(sorted(opened))}', end='', flush=True)
 

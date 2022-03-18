@@ -5,7 +5,7 @@ def generate_key() -> bytes:
 	return Fernet.generate_key()
 
 
-def write_key(key_file, key: bytes) -> None:
+def write_key(key_file: str, key: bytes) -> None:
 	"""
 	Saves key into a file
 	"""
