@@ -1,24 +1,13 @@
-import socket
-import regex as re
 import string
-import json
-import base64
-import sqlite3
-import win32crypt
-from Crypto.Cipher import AES
 import subprocess
-from threading import Thread, Lock
+import regex as re
 import os
-import random
-from colorama import init, Fore
-from queue import Queue
-from collections import namedtuple
-import shutil
-from datetime import datetime, timedelta
 
 
 def get_random_mac() -> str:
 	"""Generate and return a MAC address in the format of WINDOWS"""
+	import random
+
 	# get the hexdigits uppercased
 	uppercased_hexdigits = ''.join(set(string.hexdigits.upper()))
 	# 2nd character must be 2, 4, A, or E
@@ -26,10 +15,10 @@ def get_random_mac() -> str:
 		random.sample(uppercased_hexdigits, k=10))
 
 
-def random_mac_address():
+def randomize_mac_address():
 	network_interface_reg_path = r"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}"
 	transport_name_regex = re.compile("{.+}")
-	mac_address_regex = re.compile(r"([A-Z0-9]{2}[:-]){5}([A-Z0-9]{2})")
+	mac_regex = re.compile(r"([A-Z0-9]{2}[:-]){5}([A-Z0-9]{2})")
 
 	def clean_mac(mac: str) -> str:
 		"""Simple function to clean non-hexadecimal characters from a MAC address
@@ -42,7 +31,7 @@ def random_mac_address():
 		# use the getmac command to extract
 		for potential_mac in subprocess.check_output("getmac").decode().splitlines():
 			# parse the MAC address from the line
-			mac_address = mac_address_regex.search(potential_mac)
+			mac_address = mac_regex.search(potential_mac)
 			# parse the transport name from the line
 			transport_name = transport_name_regex.search(potential_mac)
 			if mac_address and transport_name:
@@ -102,8 +91,8 @@ def random_mac_address():
 		return enable_output
 
 	if input('do you want to randomize mac? '):
-		# if random parameter is set, generate a random MAC
 		new_mac_address = get_random_mac()
+
 	connected_adapters_mac = get_connected_adapters_mac_address()
 	old_mac_address, target_transport_name = get_user_adapter_choice(connected_adapters_mac)
 
@@ -117,6 +106,13 @@ def random_mac_address():
 
 
 def port_scan(host: str):
+	from colorama import init, Fore
+	from queue import Queue
+	from threading import Thread, Lock
+	import socket
+	from time import time
+	t0: float = time()
+
 	init()
 	GREEN: str = Fore.GREEN
 	RESET: str = Fore.RESET
@@ -170,11 +166,16 @@ def port_scan(host: str):
 		q.join()
 
 	main(host, ports)
-	print(f'\rfinished {tuple(sorted(opened))}', end='', flush=True)
+	t1: float = time()
+	print(f'\rfinished {tuple(sorted(opened))}')
+
+	print(f'{round(t1 - t0, 4)} s')
 
 
 def saved_wifi_passwords() -> None:
-	Profile = namedtuple("Profile", ["ssid", "ciphers", "key"])
+	from collections import namedtuple
+
+	Profile: type = namedtuple("Profile", ["ssid", "ciphers", "key"])
 
 	def get_saved_ssids() -> list[str]:
 		"""Returns a list of saved SSIDs in a Windows machine using netsh command"""
@@ -202,11 +203,11 @@ def saved_wifi_passwords() -> None:
 		for ssid in ssids:
 			ssid_details: str = subprocess.check_output(f'netsh wlan show profile "{ssid}" key=clear').decode()
 			# get the ciphers
-			ciphers: str = re.findall(r"Cipher\s(.*)", ssid_details)
+			ciphers: list[str] = re.findall(r"Cipher\s(.*)", ssid_details)
 			# clear spaces and colon
 			ciphers: str = "/".join([c.strip().strip(":").strip() for c in ciphers])
 			# get the Wi-Fi __password
-			key: str = re.findall(r"Key Content\s(.*)", ssid_details)
+			key: list[str] = re.findall(r"Key Content\s(.*)", ssid_details)
 			# clear spaces and colon
 			try:
 				key: str = key[0].strip().strip(':').strip()
@@ -231,6 +232,13 @@ def saved_wifi_passwords() -> None:
 
 
 def saved_chrome_passwords() -> None:
+	import json
+	import base64
+	import sqlite3
+	import win32crypt
+	from Crypto.Cipher import AES
+	import shutil
+	from datetime import datetime, timedelta
 
 	def get_chrome_datetime(chromedate):
 		"""Return a `datetime.datetime` object from a chrome format datetime

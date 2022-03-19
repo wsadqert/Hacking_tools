@@ -5,8 +5,8 @@ from typing import Union
 from os import PathLike
 
 
-PATH = Union[str, bytes, PathLike[str], PathLike[bytes]]
-url = "https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt"
+PATH: type = Union[str, bytes, PathLike[str], PathLike[bytes]]
+url: str = "https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt"
 wordlist_path: PATH = "./hacking/sources/rockyou.txt"
 
 try:
