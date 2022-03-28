@@ -1,7 +1,27 @@
 import string
 import subprocess
+
 import regex as re
 import os
+from requests import Response
+from colorama import init as colorama_init, Fore
+
+from pydantic import AnyHttpUrl
+from requests_html import HTMLSession
+
+colorama_init()
+
+GREEN: str = Fore.GREEN
+GRAY: str = Fore.LIGHTBLACK_EX
+RESET: str = Fore.RESET
+YELLOW: str = Fore.YELLOW
+
+
+async def render(response):
+	try:
+		await response.html.arender()
+	except:
+		pass
 
 
 def get_random_mac() -> str:
@@ -321,3 +341,95 @@ def saved_chrome_passwords() -> None:
 
 	return
 
+
+def extract_emails(url: AnyHttpUrl = "https://www.randomlists.com/email-addresses") -> list[str]:
+	EMAIL_REGEX = r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
+
+	session: HTMLSession = HTMLSession()
+	response: Response = session.get(url)
+	render(response)
+
+	ans: list[str] = [re_match.group() for re_match in re.finditer(EMAIL_REGEX, response.html.raw_html.decode())]
+	return ans
+
+
+def extract_links(url: AnyHttpUrl = "https://www.randomlists.com/email-addresses", max_urls: int = 30) -> tuple[set[str], set[str]]:
+	from urllib.parse import urlparse, urljoin, ParseResult
+	from bs4 import BeautifulSoup
+	from typing import Union
+
+	internal_urls: set = set()
+	external_urls: set = set()
+
+	max_urls -= 1
+
+	global total_urls_visited
+	total_urls_visited = 0
+
+	def is_valid(url: AnyHttpUrl) -> bool:
+		"""Checks whether `url` is a valid URL."""
+		parsed: ParseResult = urlparse(url)
+		return bool(parsed.netloc and parsed.scheme)
+
+	def get_all_website_links(url: AnyHttpUrl) -> set[str]:
+		"""Returns all URLs that is found on `url` in which it belongs to the same website"""
+
+		urls: set = set()
+		domain_name: str = urlparse(url).netloc
+		session: HTMLSession = HTMLSession()
+		response: Response = session.get(url)
+
+		render(response)
+
+		soup = BeautifulSoup(response.html.html, 'html.parser')
+		for a_tag in soup.findAll('a'):
+			href = a_tag.attrs.get('href')
+			if not href:
+				continue
+
+			# join the URL if it's relative link
+			href = urljoin(url, href)
+			parsed_href = urlparse(href)
+			# remove URL GET parameters, URL fragments, etc.
+			href = parsed_href.scheme + '://' + parsed_href.netloc + parsed_href.path
+
+			if not is_valid(href):
+				continue
+			if href in internal_urls:
+				continue
+			if domain_name not in href:
+				# external link
+				if href not in external_urls:
+					print(f"{GRAY}[!] External link: {href}{RESET}")
+					external_urls.add(href)
+				continue
+			print(f"{GREEN}[*] Internal link: {href}{RESET}")
+			urls.add(href)
+			internal_urls.add(href)
+		return urls
+
+	def crawl(url: Union[AnyHttpUrl, str], max_urls:  int):
+		"""
+		Crawls a web page and extracts all links.
+		You'll find all links in `external_urls` and `internal_urls` global set variables.
+		:type url: Union[AnyHttpUrl, str]
+		:param max_urls: number of max urls to crawl
+		:type max_urls: int
+		"""
+		global total_urls_visited
+		total_urls_visited += 1
+		print(f"{YELLOW}[*] Crawling: {url}{RESET}")
+		links: set[str] = get_all_website_links(url)
+		for link in links:
+			if total_urls_visited > max_urls:
+				break
+			crawl(link, max_urls=max_urls)
+
+	crawl(url, max_urls=max_urls)
+
+	print("[+] Total Internal links:", len(internal_urls))
+	print("[+] Total External links:", len(external_urls))
+	print("[+] Total URLs:", len(external_urls) + len(internal_urls))
+	print("[+] Total crawled URLs:", max_urls + 1)
+
+	return internal_urls, external_urls
