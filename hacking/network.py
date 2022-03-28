@@ -126,17 +126,11 @@ def randomize_mac_address():
 
 
 def port_scan(host: str):
-	from colorama import init, Fore
 	from queue import Queue
 	from threading import Thread, Lock
 	import socket
 	from time import time
 	t0: float = time()
-
-	init()
-	GREEN: str = Fore.GREEN
-	RESET: str = Fore.RESET
-	GRAY: str = Fore.LIGHTBLACK_EX
 
 	N_THREADS: int = 1000
 	q: Queue = Queue()
