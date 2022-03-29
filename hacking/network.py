@@ -7,7 +7,7 @@ from requests import Response
 from colorama import init as colorama_init, Fore
 
 from pydantic import AnyHttpUrl
-from requests_html import HTMLSession
+from requests_html import HTMLSession, MaxRetries
 
 colorama_init()
 
@@ -20,7 +20,7 @@ YELLOW: str = Fore.YELLOW
 async def render(response):
 	try:
 		await response.html.arender()
-	except:
+	except MaxRetries:
 		pass
 
 

