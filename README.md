@@ -1,2 +1,2 @@
 # Hacking_tools
-![Coding time tracker](https://wakatime.com/badge/github/wakatime/jetbrains-wakatime.svg)(https://wakatime.com/badge/github/PM-95025/Hacking_tools)
+Example: <img src="https://github.com/PM-95025/Hacking_tools/blob/master/codeStats.svg" alt="Coding time tracker/>
