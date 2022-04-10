@@ -8,6 +8,7 @@ from colorama import init as colorama_init, Fore
 
 from pydantic import AnyHttpUrl
 from requests_html import HTMLSession, MaxRetries
+from tqdm import tqdm
 
 colorama_init()
 
@@ -130,6 +131,7 @@ def port_scan(host: str):
 	from threading import Thread, Lock
 	import socket
 	from time import time
+
 	t0: float = time()
 
 	N_THREADS: int = 1000
@@ -138,7 +140,7 @@ def port_scan(host: str):
 
 	# parse_wiki()
 
-	with open("D:/ports_info.txt", 'rt', encoding='windows-1251') as f:
+	with open("./hacking/sources/ports_info.txt", 'rt', encoding='windows-1251') as f:
 		ports_info = eval(f.read())
 
 	ports = [i[0] for i in ports_info]
@@ -153,12 +155,10 @@ def port_scan(host: str):
 		try:
 			s.connect((host, port))
 		except socket.error:
-			with print_lock:
-				print(f"\r{GRAY}{host:15}:{port:5} is closed {RESET}", end='', flush=True)
+			print(f'\rfound {len(opened)} opened ports', end='', flush=True)
+			pass
 		else:
-			with print_lock:
-				print(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}- {ports_info[port]}")
-				opened.add(port)
+			opened.add(port)
 		finally:
 			s.close()
 
@@ -169,19 +169,25 @@ def port_scan(host: str):
 			q.task_done()
 
 	def main(host, ports):
-		for t in range(N_THREADS):
+		for t in tqdm(range(N_THREADS)):
 			t = Thread(target=scan_thread)
 			t.daemon = True
 			t.start()
 
-		for worker in ports:
+		for worker in tqdm(ports):
 			q.put(worker)
 
 		q.join()
 
 	main(host, ports)
 	t1: float = time()
-	print(f'\rfinished {tuple(sorted(opened))}')
+
+	for port in sorted(opened):
+		with print_lock:
+			print(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}- {ports_info[port]}")
+		pass
+
+	print(f'finished (found {len(opened)} opened ports)')
 
 	print(f'{round(t1 - t0, 4)} s')
 
