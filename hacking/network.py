@@ -15,6 +15,7 @@ colorama_init()
 GREEN: str = Fore.GREEN
 GRAY: str = Fore.LIGHTBLACK_EX
 RESET: str = Fore.RESET
+RED: str = Fore.RED
 YELLOW: str = Fore.YELLOW
 
 
@@ -126,6 +127,25 @@ def randomize_mac_address():
 	print("[+] Adapter is enabled again")
 
 
+def _print_port_info(port: int):
+	with open("./hacking/sources/ports_info.txt", 'rt', encoding='windows-1251') as f:
+		ports_info = eval(f.read())
+
+	ports: list[int] = [i[0] for i in ports_info]
+	info: list[str] = [i[1] for i in ports_info]
+
+	indexes: list[int] = [i for i, x in enumerate(ports) if x == port]
+
+	print(f'Information about port {GREEN}{port}{RESET}:')
+
+	if not indexes:
+		print(f'{RED}No information!{RESET}')
+		return
+
+	for i in indexes:
+		print('-', info[i])
+
+
 def port_scan(host: str):
 	from queue import Queue
 	from threading import Thread, Lock
@@ -143,10 +163,8 @@ def port_scan(host: str):
 	with open("./hacking/sources/ports_info.txt", 'rt', encoding='windows-1251') as f:
 		ports_info = eval(f.read())
 
-	ports = [i[0] for i in ports_info]
-	info = [i[1] for i in ports_info]
-
-	ports_info = dict(zip(ports, info))
+	ports: list[int] = [i[0] for i in ports_info]
+	info: list[str] = [i[1] for i in ports_info]
 
 	opened: set[int] = set()
 
@@ -184,8 +202,13 @@ def port_scan(host: str):
 
 	for port in sorted(opened):
 		with print_lock:
-			print(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}- {ports_info[port]}")
-		pass
+			indexes: list[int] = [i for i, x in enumerate(ports) if x == port]
+
+			print(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}- {info[indexes[0]]}")
+
+			for index in indexes[1:]:
+				print(' ' * (len(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}") - 11), end='')
+				print('-', info[index])
 
 	print(f'finished (found {len(opened)} opened ports)')
 
@@ -262,7 +285,7 @@ def saved_chrome_passwords() -> None:
 
 	def get_chrome_datetime(chromedate):
 		"""Return a `datetime.datetime` object from a chrome format datetime
-		Since `chromedate` is formatted as the number of microseconds since January, 1601"""
+		Since `chromedate` is formatted as the number of microseconds since January 1601"""
 		return datetime(1601, 1, 1) + timedelta(microseconds=chromedate)
 
 	def get_encryption_key():
