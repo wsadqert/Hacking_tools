@@ -155,8 +155,6 @@ def print_port_info(port: int) -> None:
 	
 	for i in indexes:
 		print('-', info[i])
-	for i in indexes_threat:
-		print(f'-{RED}', info_threat[i], RESET)
 
 
 def port_scan(host: str) -> set[int]:
@@ -216,7 +214,7 @@ def port_scan(host: str) -> set[int]:
 
 	main(host, ports)
 	t1: float = time()
-	
+
 	for port in sorted(opened):
 		with print_lock:
 			indexes: list[int] = [i for i, x in enumerate(ports) if x == port]

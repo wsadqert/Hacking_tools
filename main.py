@@ -9,9 +9,7 @@ while True:
 	print_port_info(port=int(input('enter port: ')))
 # port_scan(host='8.8.8.8')
 
-"""
-with open("hacking/sources/ports_info.dat", 'rt', encoding='windows-1251') as f:
-	ports_info = eval(f.read())
+_print_port_info(port=13)
 
 ports: list[int] = [i[0] for i in ports_info]
 
