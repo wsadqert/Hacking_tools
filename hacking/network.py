@@ -155,7 +155,7 @@ def print_port_info(port: int) -> None:
 	
 	for i in indexes:
 		print('-', info[i])
-	for i in indexes:
+	for i in indexes_threat:
 		print(f'-{RED}', info_threat[i], RESET)
 
 
