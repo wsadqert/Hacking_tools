@@ -1,6 +1,6 @@
 import string
 import subprocess
-from re import Pattern
+from re import Pattern, Match
 
 import regex as re
 import os
@@ -50,13 +50,13 @@ def randomize_mac_address():
 
 	def get_connected_adapters_mac_address() -> list[tuple]:
 		# make a list to collect connected adapter's MAC addresses along with the transport name
-		connected_adapters_mac = []
+		connected_adapters_mac: list[tuple] = []
 		# use the getmac command to extract
 		for potential_mac in subprocess.check_output("getmac").decode().splitlines():
 			# parse the MAC address from the line
 			mac_address = mac_regex.search(potential_mac)
 			# parse the transport name from the line
-			transport_name = transport_name_regex.search(potential_mac)
+			transport_name: Match = transport_name_regex.search(potential_mac)
 			if mac_address and transport_name:
 				# if a MAC and transport name are found, add them to our list
 				connected_adapters_mac.append((mac_address.group(), transport_name.group()))
@@ -93,7 +93,7 @@ def randomize_mac_address():
 				# if the transport name of the adapter is found on the output of the reg QUERY command
 				# then this is the adapter we're looking for
 				# change the MAC address using reg ADD command
-				changing_mac_output = subprocess.check_output(f"reg add {interface} /v NetworkAddress /d {new_mac_address} /f").decode()
+				changing_mac_output: str = subprocess.check_output(f"reg add {interface} /v NetworkAddress /d {new_mac_address} /f").decode()
 				# print the command output
 				print(changing_mac_output)
 				# break out of the loop as we're done
@@ -110,16 +110,16 @@ def randomize_mac_address():
 		return subprocess.check_output(f"wmic path win32_networkadapter where index={adapter_index} call enable").decode()
 
 	if input('do you want to randomize mac? (y/n)').lower() == 'y':
-		new_mac_address = get_random_mac()
+		new_mac_address: str = get_random_mac()
 	else:
-		new_mac_address = input('enter new mac: ')
+		new_mac_address: str = input('enter new mac: ')
 
 	connected_adapters_mac: list[tuple] = get_connected_adapters_mac_address()
 	old_mac_address, target_transport_name = get_user_adapter_choice(connected_adapters_mac)
 
 	print("[*] Old MAC address:", old_mac_address)
 	
-	adapter_index = change_mac_address(target_transport_name, new_mac_address)
+	adapter_index: int = change_mac_address(target_transport_name, new_mac_address)
 	print("[+] Changed to:", new_mac_address)
 	
 	disable_adapter(adapter_index)
@@ -188,11 +188,11 @@ def port_scan(host: str) -> set[int]:
 		try:
 			s.connect((host, port))
 		except socket.error:
-			print(f'\rfound {len(opened)} opened ports', end='', flush=True)
 			pass
 		else:
 			opened.add(port)
 		finally:
+			print(f'\rfound {len(opened)} opened ports', end='', flush=True)
 			s.close()
 
 	def scan_thread(host: str):
@@ -202,35 +202,37 @@ def port_scan(host: str) -> set[int]:
 			q.task_done()
 
 	def main(host: str, ports: Iterable[int]):
-		for t in tqdm(range(N_THREADS)):
+		for t in tqdm(range(N_THREADS), desc='Threads'):
 			t = Thread(target=scan_thread, args=(host,))
 			t.daemon = True
 			t.start()
 
-		for worker in tqdm(ports):
+		for worker in tqdm(ports, desc='Ports'):
 			q.put(worker)
 
 		q.join()
 
 	main(host, ports)
 	t1: float = time()
-
+	
 	for port in sorted(opened):
 		with print_lock:
 			indexes: list[int] = [i for i, x in enumerate(ports) if x == port]
 			indexes_threat: list[int] = [i for i, x in enumerate(ports_threat) if x == port]
 			
+			message = f"{GREEN}{host:15}:{port:5} is opened {RESET}-"
+			print('\r', message, end=' ', sep='')
+			
 			if not indexes and not indexes_threat:
-				print(f'{RED}No information!{RESET}')
+				print(f'{RED}no information!{RESET}')
 				continue
 			
-			print(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}- {info[indexes[0]]}")
+			print(f"{info[indexes[0]]}")
 			
 			for index in indexes[1:]:
-				print(' ' * (len(f"\r{GREEN}{host:15}:{port:5} is opened {RESET}") - 11), end='')
-				print('-', info[index])
+				print(' ' * len(message), '- ', info[index], sep='')
 			for index in indexes_threat:
-				print(' ' * 31, f'-{RED}', info_threat[index], RESET)
+				print(' ' * len(message), '- ', RED, info_threat[index], RESET, sep='')
 
 	print(f'finished (found {len(opened)} opened ports)')
 
