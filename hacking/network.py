@@ -5,12 +5,13 @@ from re import Pattern, Match
 import regex as re
 import os
 from requests import Response
+from ipaddress import IPv4Network
 from colorama import init as colorama_init, Fore
 
 from pydantic import AnyHttpUrl
 from requests_html import HTMLSession, MaxRetries
 from tqdm import tqdm
-from typing import Iterable
+from typing import Iterable, Union
 
 colorama_init()
 
@@ -129,11 +130,7 @@ def randomize_mac_address():
 	print("[+] Adapter is enabled again")
 
 
-def print_port_info(port: int) -> None:
-	if port not in range(0, 65537):
-		print(f'{RED}Not a port!{RESET}')
-		return
-	
+def _init_ports_info() -> tuple[list[int], list[str], list[int], list[str]]:
 	with open("./hacking/sources/ports_info.dat", 'rt', encoding='windows-1251') as f:
 		ports_info = eval(f.read())
 	with open("./hacking/sources/ports_threat.dat", 'rt', encoding='windows-1251') as f:
@@ -143,7 +140,16 @@ def print_port_info(port: int) -> None:
 	info: list[str] = [i[1] for i in ports_info]
 	ports_threat: list[int] = [i[0] for i in ports_threat_info]
 	info_threat: list[str] = [i[1] for i in ports_threat_info]
+	return ports, info, ports_threat, info_threat
 
+
+def print_port_info(port: int) -> None:
+	if port not in range(0, 65537):
+		print(f'{RED}Not a port!{RESET}')
+		return
+	
+	ports, info, ports_threat, info_threat = _init_ports_info()
+	
 	indexes: list[int] = [i for i, x in enumerate(ports) if x == port]
 	indexes_threat: list[int] = [i for i, x in enumerate(ports_threat) if x == port]
 
@@ -155,6 +161,8 @@ def print_port_info(port: int) -> None:
 	
 	for i in indexes:
 		print('-', info[i])
+	for index in indexes_threat:
+		print('- ', RED, info_threat[index], RESET, sep='')
 
 
 def port_scan(host: str) -> set[int]:
@@ -169,18 +177,7 @@ def port_scan(host: str) -> set[int]:
 	q: Queue[int] = Queue()
 	print_lock: Lock = Lock()
 
-	# parse_wiki()
-	
-	with open("./hacking/sources/ports_info.dat", 'rt', encoding='windows-1251') as f:
-		ports_info = eval(f.read())
-	with open("./hacking/sources/ports_threat.dat", 'rt', encoding='windows-1251') as f:
-		ports_threat_info = eval(f.read())
-	
-	ports: list[int] = [i[0] for i in ports_info]
-	info: list[str] = [i[1] for i in ports_info]
-	ports_threat: list[int] = [i[0] for i in ports_threat_info]
-	info_threat: list[str] = [i[1] for i in ports_threat_info]
-	
+	ports, info, ports_threat, info_threat = _init_ports_info()
 	opened: set[int] = set()
 
 	def scan_port(host: str, port: int):
