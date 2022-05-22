@@ -13,7 +13,7 @@ from lzma import LZMAError
 def crack_pdf(filename: str):
 	for password in tqdm(wordlist, "Cracking PDF"):
 		try:
-			with pikepdf.open(filename, password=password) as pdf:
+			with pikepdf.open(filename, password=password):
 				print("[+] Password found:", password)
 				break
 		except pikepdf.PasswordError:

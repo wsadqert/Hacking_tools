@@ -1,17 +1,37 @@
+import random
 import string
-import subprocess
-from re import Pattern, Match
-
 import regex as re
+from time import time
+from datetime import datetime, timedelta
+import json
+import base64
+
+import subprocess
 import os
-from requests import Response
-from ipaddress import IPv4Network
+import shutil
+from sqlite3 import Connection, Cursor, connect
+from Crypto.Cipher import AES
+import win32crypt
+
 from colorama import init as colorama_init, Fore
 
-from pydantic import AnyHttpUrl
+import socket
+from requests import Response
 from requests_html import HTMLSession, MaxRetries
+
+from urllib.parse import urlparse, urljoin, ParseResult
+from bs4 import BeautifulSoup
+
 from tqdm import tqdm
-from typing import Iterable, Union
+
+from typing import Iterable
+from collections import namedtuple
+
+from queue import Queue
+from threading import Thread, Lock
+
+from hacking import PATH, URL
+
 
 colorama_init()
 
@@ -22,32 +42,25 @@ RED: str = Fore.RED
 YELLOW: str = Fore.YELLOW
 
 
-async def render(response):
+async def render(response) -> None:
 	try:
 		await response.html.arender()
 	except MaxRetries:
 		pass
 
 
-def get_random_mac() -> str:
+def generate_random_mac() -> str:
 	"""Generate and return a MAC address in the format of WINDOWS"""
-	import random
-
 	# get the hexdigits uppercased
 	uppercased_hexdigits = ''.join(set(string.hexdigits.upper()))
 	# 2nd character must be 2, 4, A, or E
 	return random.choice(uppercased_hexdigits) + random.choice("24AE") + "".join(random.sample(uppercased_hexdigits, k=10))
 
 
-def randomize_mac_address():
+def randomize_mac_address() -> None:
 	network_interface_reg_path: str = r"HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e972-e325-11ce-bfc1-08002be10318}"
-	transport_name_regex: Pattern = re.compile("{.+}")
-	mac_regex: Pattern = re.compile(r"([A-Z0-9]{2}[:-]){5}([A-Z0-9]{2})")
-
-	def clean_mac(mac: str) -> str:
-		"""Simple function to clean non-hexadecimal characters from a MAC address
-		mostly used to remove '-' and ':' from MAC addresses and also uppercase it"""
-		return "".join(c for c in mac if c in string.hexdigits).upper()
+	transport_name_regex: re.Pattern = re.compile("{.+}")
+	mac_regex: re.Pattern = re.compile(r"([A-Z0-9]{2}[:-]){5}([A-Z0-9]{2})")
 
 	def get_connected_adapters_mac_address() -> list[tuple]:
 		# make a list to collect connected adapter's MAC addresses along with the transport name
@@ -55,15 +68,15 @@ def randomize_mac_address():
 		# use the getmac command to extract
 		for potential_mac in subprocess.check_output("getmac").decode().splitlines():
 			# parse the MAC address from the line
-			mac_address = mac_regex.search(potential_mac)
+			mac_address: re.Match[str] = mac_regex.search(potential_mac)
 			# parse the transport name from the line
-			transport_name: Match = transport_name_regex.search(potential_mac)
+			transport_name: re.Match[str] = transport_name_regex.search(potential_mac)
 			if mac_address and transport_name:
 				# if a MAC and transport name are found, add them to our list
 				connected_adapters_mac.append((mac_address.group(), transport_name.group()))
 		return connected_adapters_mac
 
-	def get_user_adapter_choice(connected_adapters_mac):
+	def get_user_adapter_choice(connected_adapters_mac: list[tuple]) -> tuple[str, str]:
 		# print the available adapters
 		for i, option in enumerate(connected_adapters_mac):
 			print(f"#{i}: {option[0]}, {option[1]}")
@@ -72,22 +85,22 @@ def randomize_mac_address():
 			return connected_adapters_mac[0]
 		# prompt the user to choose a network adapter index
 		try:
-			choice = int(input("Please choose the interface you want to change the MAC address:"))
+			choice: int = int(input("Please choose the interface you want to change the MAC address:"))
 			# return the target chosen adapter's MAC and transport name that we'll use later to search for our adapter
 			# using the reg QUERY command
 			return connected_adapters_mac[choice]
-		except:
+		except (ValueError, IndexError):
 			# if -for whatever reason- an error is raised, just quit the script
 			print("Not a valid choice, quitting...")
 			exit()
 
-	def change_mac_address(adapter_transport_name, new_mac_address):
+	def change_mac_address(adapter_transport_name: str, new_mac_address: str) -> int:
 		# use reg QUERY command to get available adapters from the registry
 		output: str = subprocess.check_output(f"reg QUERY " + network_interface_reg_path.replace("\\\\", "\\")).decode()
 		
 		for interface in re.findall(rf"{network_interface_reg_path}\\\d+", output):
 			# get the adapter index
-			adapter_index = int(interface.split("\\")[-1])
+			adapter_index: int = int(interface.split("\\")[-1])
 			interface_content: str = subprocess.check_output(f"reg QUERY {interface.strip()}").decode()
 
 			if adapter_transport_name in interface_content:
@@ -111,7 +124,7 @@ def randomize_mac_address():
 		return subprocess.check_output(f"wmic path win32_networkadapter where index={adapter_index} call enable").decode()
 
 	if input('do you want to randomize mac? (y/n)').lower() == 'y':
-		new_mac_address: str = get_random_mac()
+		new_mac_address: str = generate_random_mac()
 	else:
 		new_mac_address: str = input('enter new mac: ')
 
@@ -132,7 +145,7 @@ def randomize_mac_address():
 
 def _init_ports_info() -> tuple[list[int], list[str], list[int], list[str]]:
 	with open("./hacking/sources/ports_info.dat", 'rt', encoding='windows-1251') as f:
-		ports_info = eval(f.read())
+		ports_info: list[list] = eval(f.read())
 	with open("./hacking/sources/ports_threat.dat", 'rt', encoding='windows-1251') as f:
 		ports_threat_info = eval(f.read())
 
@@ -166,11 +179,6 @@ def print_port_info(port: int) -> None:
 
 
 def port_scan(host: str) -> set[int]:
-	from queue import Queue
-	from threading import Thread, Lock
-	import socket
-	from time import time
-
 	t0: float = time()
 
 	N_THREADS: int = 1000
@@ -181,7 +189,7 @@ def port_scan(host: str) -> set[int]:
 	opened: set[int] = set()
 
 	def scan_port(host: str, port: int):
-		s = socket.socket()
+		s: socket = socket.socket()
 		try:
 			s.connect((host, port))
 		except socket.error:
@@ -199,10 +207,8 @@ def port_scan(host: str) -> set[int]:
 			q.task_done()
 
 	def main(host: str, ports: Iterable[int]):
-		for t in tqdm(range(N_THREADS), desc='Threads'):
-			t = Thread(target=scan_thread, args=(host,))
-			t.daemon = True
-			t.start()
+		for _ in tqdm(range(N_THREADS), desc='Threads'):
+			Thread(target=scan_thread, args=(host,), daemon=True).start()
 
 		for worker in tqdm(ports, desc='Ports'):
 			q.put(worker)
@@ -239,8 +245,6 @@ def port_scan(host: str) -> set[int]:
 
 
 def saved_wifi_passwords() -> None:
-	from collections import namedtuple
-
 	Profile: type = namedtuple("Profile", ["ssid", "ciphers", "key"])
 
 	def get_saved_ssids() -> list[str]:
@@ -294,31 +298,35 @@ def saved_wifi_passwords() -> None:
 
 	print_profiles()
 
-	return
+
+def decrypt_password(password: bytes | bytearray, encryption_key: bytes | bytearray) -> str:
+	try:
+		iv: bytes | bytearray = password[3:15]
+		password: bytes | bytearray = password[15:]
+		cipher = AES.new(encryption_key, AES.MODE_GCM, iv)
+		return cipher.decrypt(password)[:-16].decode()
+	except UnicodeDecodeError:
+		try:
+			return str(win32crypt.CryptUnprotectData(password, None, None, None, 0)[1])
+		except Exception:
+			# not supported
+			return ''
 
 
 def saved_chrome_passwords() -> None:
-	import json
-	import base64
-	import sqlite3
-	import win32crypt
-	from Crypto.Cipher import AES
-	import shutil
-	from datetime import datetime, timedelta
-
-	def get_chrome_datetime(chromedate) -> datetime:
+	def get_chrome_datetime(chromedate: int) -> datetime:
 		"""Return a `datetime.datetime` object from a chrome format datetime
 		Since `chromedate` is formatted as the number of microseconds since January 1601"""
 		return datetime(1601, 1, 1) + timedelta(microseconds=chromedate)
 
-	def get_encryption_key():
-		local_state_path = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "Google", "Chrome", "User Data", "Local State")
+	def get_encryption_key() -> bytes | bytearray:
+		local_state_path: PATH = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "Google", "Chrome", "User Data", "Local State")
 		with open(local_state_path, "r", encoding="utf-8") as f:
 			local_state = f.read()
 			local_state = json.loads(local_state)
 
 		# decode the encryption key from Base64
-		key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+		key: bytes = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
 		# remove DPAPI str
 		key = key[5:]
 		# return decrypted key that was originally encrypted
@@ -326,33 +334,20 @@ def saved_chrome_passwords() -> None:
 		# doc: http://timgolden.me.uk/pywin32-docs/win32crypt.html
 		return win32crypt.CryptUnprotectData(key, None, None, None, 0)[1]
 
-	def decrypt_password(password, key) -> str:
-		try:
-			iv = password[3:15]
-			password = password[15:]
-			cipher = AES.new(key, AES.MODE_GCM, iv)
-			return cipher.decrypt(password)[:-16].decode()
-		except:
-			try:
-				return str(win32crypt.CryptUnprotectData(password, None, None, None, 0)[1])
-			except:
-				# not supported
-				return ''
-
-	key = get_encryption_key()
+	key: bytes | bytearray = get_encryption_key()
 	# local sqlite Chrome database path
-	db_path = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "Google", "Chrome", "User Data", "default", "Login Data")
+	db_path: PATH = os.path.join(os.environ["USERPROFILE"], "AppData", "Local", "Google", "Chrome", "User Data", "Default", "Login Data")
 	# copy the file to another location
 	# as the database will be locked if chrome is currently running
-	filename = "ChromeData.db"
+	filename: PATH = "./ChromeData.db"
 	shutil.copyfile(db_path, filename)
-	db = sqlite3.connect(filename)
-	cursor = db.cursor()
-	cursor.execute("select origin_url, action_url, username_value, password_value, date_created, date_last_used from logins order by date_created")
+	db: Connection = connect(filename)
+	cursor: Cursor = db.cursor()
+	cursor.execute("SELECT origin_url, action_url, username_value, password_value, date_created, date_last_used FROM logins ORDER BY date_created")
 
 	for row in cursor.fetchall():
 		origin_url, action_url, username, _, date_created, date_last_used = row
-		password = decrypt_password(row[3], key)
+		password: str = decrypt_password(row[3], key)
 
 		if username or password:
 			print(f"Origin URL: {origin_url}")
@@ -372,44 +367,40 @@ def saved_chrome_passwords() -> None:
 	cursor.close()
 	db.close()
 	
+	"""
 	try:
 		os.remove(filename)
 	except (IsADirectoryError, FileNotFoundError, OSError):
 		pass
+	"""
 
-	return
 
-
-def extract_emails(url: AnyHttpUrl = "https://www.randomlists.com/email-addresses") -> list[str]:
+def extract_emails(url: URL = "https://www.randomlists.com/email-addresses") -> tuple[str]:
 	EMAIL_REGEX = r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
 
 	session: HTMLSession = HTMLSession()
 	response: Response = session.get(url)
 	render(response)
 
-	ans: list[str] = [re_match.group() for re_match in re.finditer(EMAIL_REGEX, response.html.raw_html.decode())]
+	ans: tuple = tuple(re_match.group() for re_match in re.finditer(EMAIL_REGEX, response.html.raw_html.decode()))
 	return ans
 
 
-def extract_links(url: AnyHttpUrl = "https://www.randomlists.com/email-addresses", max_urls: int = 30) -> tuple[set[str], set[str]]:
-	from urllib.parse import urlparse, urljoin, ParseResult
-	from bs4 import BeautifulSoup
-	from typing import Union
-
-	internal_urls: set = set()
-	external_urls: set = set()
+def extract_links(url: URL = "https://www.randomlists.com/email-addresses", max_urls: int = 30) -> tuple[set[str], set[str]]:
+	internal_urls: set[URL] = set()
+	external_urls: set[URL] = set()
 
 	max_urls -= 1
 
 	global total_urls_visited
-	total_urls_visited = 0
+	total_urls_visited: int = 0
 
-	def is_valid(url: AnyHttpUrl) -> bool:
+	def is_valid(url: URL) -> bool:
 		"""Checks whether `url` is a valid URL."""
 		parsed: ParseResult = urlparse(url)
 		return bool(parsed.netloc and parsed.scheme)
 
-	def get_all_website_links(url: AnyHttpUrl) -> set[str]:
+	def get_all_website_links(url: URL) -> set[URL]:
 		"""Returns all URLs that is found on `url` in which it belongs to the same website"""
 
 		urls: set = set()
@@ -419,7 +410,7 @@ def extract_links(url: AnyHttpUrl = "https://www.randomlists.com/email-addresses
 
 		render(response)
 
-		soup = BeautifulSoup(response.html.html, 'html.parser')
+		soup: BeautifulSoup = BeautifulSoup(response.html.html, 'html.parser')
 		for a_tag in soup.findAll('a'):
 			href = a_tag.attrs.get('href')
 			if not href:
@@ -446,18 +437,15 @@ def extract_links(url: AnyHttpUrl = "https://www.randomlists.com/email-addresses
 			internal_urls.add(href)
 		return urls
 
-	def crawl(url: Union[AnyHttpUrl, str], max_urls:  int):
+	def crawl(url: URL, max_urls: int):
 		"""
 		Crawls a web page and extracts all links.
 		You'll find all links in `external_urls` and `internal_urls` global set variables.
-		:type url: Union[AnyHttpUrl, str]
-		:param max_urls: number of max urls to crawl
-		:type max_urls: int
 		"""
 		global total_urls_visited
 		total_urls_visited += 1
 		print(f"{YELLOW}[*] Crawling: {url}{RESET}")
-		links: set[str] = get_all_website_links(url)
+		links: set[URL] = get_all_website_links(url)
 		for link in links:
 			if total_urls_visited > max_urls:
 				break

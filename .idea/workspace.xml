@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="2f48595a-c7c3-4c1c-beec-20b264c80fa8" name="Changes" comment="moved getting ports info to `_init_ports_info()`">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hacking/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/hacking/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hacking/cracks.py" beforeDir="false" afterPath="$PROJECT_DIR$/hacking/cracks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hacking/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/hacking/network.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/hacking/sources/ports_info.dat" beforeDir="false" afterPath="$PROJECT_DIR$/hacking/sources/ports_info.dat" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Freeze Requirements File" />
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectId" id="26F5clXmJcKqKhiWE2ugMcPz6Vv" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/matve/PycharmProjects/Hacking_tools&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;copyright&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\matve\PycharmProjects\Hacking_tools" />
+      <recent name="C:\Users\matve\PycharmProjects\Network_tools\hacking" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\matve\PycharmProjects\Hacking_tools\hacking\sources" />
+      <recent name="C:\Users\matve\PycharmProjects\Hacking_tools\hacking\sources\samples" />
+      <recent name="C:\Users\matve\PycharmProjects\Hacking_tools\hacking" />
+      <recent name="C:\Users\matve\PycharmProjects\Hacking_tools" />
+      <recent name="C:\Users\matve\PycharmProjects\Hacking_tools\hacking\additional_data\samples" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="Network_tools" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="main" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+      <module name="Hacking_tools" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="C:\Program Files\Python310\python.exe" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/main.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2f48595a-c7c3-4c1c-beec-20b264c80fa8" name="Changes" comment="" />
+      <created>1647006574886</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1647006574886</updated>
+      <workItem from="1647006576229" duration="2591000" />
+      <workItem from="1647009940616" duration="13000" />
+      <workItem from="1647009999153" duration="6693000" />
+      <workItem from="1647022175391" duration="768000" />
+      <workItem from="1647023279983" duration="90000" />
+      <workItem from="1647180690120" duration="3262000" />
+      <workItem from="1647184882963" duration="2000000" />
+      <workItem from="1647258721004" duration="411000" />
+      <workItem from="1647259245393" duration="3281000" />
+      <workItem from="1647263968467" duration="520000" />
+      <workItem from="1647264516036" duration="2950000" />
+      <workItem from="1647359042992" duration="127000" />
+      <workItem from="1647359321655" duration="2136000" />
+      <workItem from="1647365836344" duration="2966000" />
+      <workItem from="1647415176502" duration="1870000" />
+      <workItem from="1647424084881" duration="1484000" />
+      <workItem from="1647500009051" duration="1169000" />
+      <workItem from="1647504485571" duration="1178000" />
+      <workItem from="1647508433579" duration="3018000" />
+      <workItem from="1647518459085" duration="688000" />
+      <workItem from="1647519511539" duration="1851000" />
+      <workItem from="1647541787406" duration="247000" />
+      <workItem from="1647591337092" duration="1405000" />
+      <workItem from="1647592842510" duration="7000" />
+      <workItem from="1647592890959" duration="1173000" />
+      <workItem from="1647598285223" duration="5087000" />
+      <workItem from="1647604973504" duration="241000" />
+      <workItem from="1647605243780" duration="221000" />
+      <workItem from="1647605473867" duration="62000" />
+      <workItem from="1647665973170" duration="1446000" />
+      <workItem from="1647667486161" duration="1852000" />
+      <workItem from="1647701013648" duration="1184000" />
+      <workItem from="1648472976791" duration="4252000" />
+      <workItem from="1648482702922" duration="964000" />
+      <workItem from="1648532394192" duration="2749000" />
+      <workItem from="1648535197715" duration="219000" />
+      <workItem from="1648535500302" duration="52000" />
+      <workItem from="1648541547608" duration="333000" />
+      <workItem from="1648662480212" duration="7000" />
+      <workItem from="1648912435098" duration="290000" />
+      <workItem from="1649067041945" duration="866000" />
+      <workItem from="1649527895275" duration="1087000" />
+      <workItem from="1649574848412" duration="643000" />
+      <workItem from="1649609944294" duration="1428000" />
+      <workItem from="1649683656516" duration="11000" />
+      <workItem from="1649683715928" duration="10000" />
+      <workItem from="1649684936108" duration="2440000" />
+      <workItem from="1649688056776" duration="323000" />
+      <workItem from="1649688579527" duration="492000" />
+      <workItem from="1649695678375" duration="1303000" />
+      <workItem from="1649847803266" duration="15000" />
+      <workItem from="1649871612880" duration="832000" />
+      <workItem from="1650090017385" duration="445000" />
+      <workItem from="1650294169544" duration="2173000" />
+      <workItem from="1650305272493" duration="91000" />
+      <workItem from="1650379189295" duration="738000" />
+      <workItem from="1650696736035" duration="600000" />
+      <workItem from="1650781685345" duration="600000" />
+      <workItem from="1650802340539" duration="604000" />
+      <workItem from="1650893040635" duration="6659000" />
+      <workItem from="1650993541036" duration="1032000" />
+      <workItem from="1650995980407" duration="1257000" />
+      <workItem from="1651055029129" duration="18000" />
+      <workItem from="1651080839194" duration="2295000" />
+      <workItem from="1651315922103" duration="1324000" />
+      <workItem from="1651317270447" duration="401000" />
+      <workItem from="1651593905690" duration="2674000" />
+      <workItem from="1651678002345" duration="835000" />
+      <workItem from="1652000195560" duration="934000" />
+      <workItem from="1652001218774" duration="36000" />
+      <workItem from="1652009844940" duration="599000" />
+      <workItem from="1652018287286" duration="1443000" />
+      <workItem from="1652019784256" duration="729000" />
+      <workItem from="1652198153504" duration="3004000" />
+      <workItem from="1652611845885" duration="2232000" />
+      <workItem from="1652618480867" duration="1175000" />
+      <workItem from="1652707295127" duration="646000" />
+      <workItem from="1652776922430" duration="107000" />
+      <workItem from="1652777642188" duration="1380000" />
+      <workItem from="1652888047650" duration="3539000" />
+      <workItem from="1652971008056" duration="5658000" />
+      <workItem from="1653146422427" duration="4418000" />
+      <workItem from="1653226503059" duration="1543000" />
+    </task>
+    <task id="LOCAL-00001" summary="Initial commit">
+      <created>1647022902135</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1647022902136</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Initial commit">
+      <created>1647023304429</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1647023304429</updated>
+    </task>
+    <task id="LOCAL-00003" summary="added `hacking` module, sources, samples">
+      <created>1647510875027</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1647510875027</updated>
+    </task>
+    <task id="LOCAL-00004" summary="added `hacking` module, sources, samples">
+      <created>1647511607442</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1647511607442</updated>
+    </task>
+    <task id="LOCAL-00005" summary="added `hacking` module, sources, samples">
+      <created>1647511756880</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1647511756880</updated>
+    </task>
+    <task id="LOCAL-00006" summary="added `hacking` module, sources, samples">
+      <created>1647511934362</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1647511934362</updated>
+    </task>
+    <task id="LOCAL-00007" summary="added `hacking` module, sources, samples">
+      <created>1647512198585</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1647512198585</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Initial commit">
+      <created>1647521414560</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1647521414560</updated>
+    </task>
+    <task id="LOCAL-00009" summary="a lot of changes">
+      <created>1647605035966</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1647605035966</updated>
+    </task>
+    <task id="LOCAL-00010" summary="a lot of changes #2">
+      <created>1647667355058</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1647667355058</updated>
+    </task>
+    <task id="LOCAL-00011" summary="added `extract_emails`, `extract_links`">
+      <created>1648475924594</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1648475924594</updated>
+    </task>
+    <task id="LOCAL-00012" summary="changed `port_scan`">
+      <created>1648476074776</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1648476074776</updated>
+    </task>
+    <task id="LOCAL-00013" summary="changed `saved_chrome_passwords`">
+      <created>1648476294735</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1648476294735</updated>
+    </task>
+    <task id="LOCAL-00014" summary="changed `saved_chrome_passwords`">
+      <created>1648476368458</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1648476368458</updated>
+    </task>
+    <task id="LOCAL-00015" summary="changed `ports_info.txt`, added exception">
+      <created>1648533001169</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1648533001169</updated>
+    </task>
+    <task id="LOCAL-00016" summary="changed `ports_info.txt`, ...">
+      <created>1649575389347</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1649575389347</updated>
+    </task>
+    <task id="LOCAL-00017" summary="added `_print_port_info()`, changed output of `port_scan()`, little changes of `ports_info.txt`">
+      <created>1649687586558</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1649687586558</updated>
+    </task>
+    <task id="LOCAL-00018" summary="added `ports_threat`, changed output of `port_scan()`, a lot of changes of `ports_info.dat`, etc">
+      <created>1650997106844</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1650997106844</updated>
+    </task>
+    <task id="LOCAL-00019" summary="added `ports_threat`, changed output of `port_scan()`, a lot of changes of `ports_info.dat`, etc">
+      <created>1650997130799</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1650997130799</updated>
+    </task>
+    <task id="LOCAL-00020" summary="fixed bug with incorrect `for` loop">
+      <created>1651316079136</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1651316079136</updated>
+    </task>
+    <task id="LOCAL-00021" summary="fixed bug with incorrect `for` loop">
+      <created>1651316595186</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1651316595186</updated>
+    </task>
+    <task id="LOCAL-00022" summary="added type hints, `desc` arg to tqdm()">
+      <created>1652001117781</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1652001117781</updated>
+    </task>
+    <task id="LOCAL-00023" summary="moved getting ports info to `_init_ports_info()`">
+      <created>1652612420306</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1652612420306</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="master" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="added `hacking` module, sources, samples" />
+    <MESSAGE value="Initial commit" />
+    <MESSAGE value="a lot of changes" />
+    <MESSAGE value="a lot of changes #2" />
+    <MESSAGE value="added `extract_emails`, `extract_links`" />
+    <MESSAGE value="changed `port_scan`" />
+    <MESSAGE value="changed `saved_chrome_passwords`" />
+    <MESSAGE value="changed `ports_info.txt`, added exception" />
+    <MESSAGE value="changed `ports_info.txt`, ..." />
+    <MESSAGE value="added `_print_port_info()`, changed output of `port_scan()`, little changes of `ports_info.txt`" />
+    <MESSAGE value="added `ports_threat`, changed output of `port_scan()`, a lot of changes of `ports_info.dat`, etc" />
+    <MESSAGE value="fixed bug with incorrect `for` loop" />
+    <MESSAGE value="added type hints, `desc` arg to tqdm()" />
+    <MESSAGE value="moved getting ports info to `_init_ports_info()`" />
+    <option name="LAST_COMMIT_MESSAGE" value="moved getting ports info to `_init_ports_info()`" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/Hacking_tools$main.coverage" NAME="main Coverage Results" MODIFIED="1652888065016" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Network_tools$main.coverage" NAME="main Coverage Results" MODIFIED="1647022793884" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+  </component>
+</project>

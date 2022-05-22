@@ -3,11 +3,14 @@ import os.path
 from astropy.utils.data import download_file
 from shutil import move
 
-from typing import Union, Final
+from typing import Final
 from os import PathLike
 
+from pydantic import AnyHttpUrl, AnyUrl, FileUrl, HttpUrl
 
-PATH: Final[type] = Union[str, bytes, PathLike[str], PathLike[bytes]]
+PATH: Final[type] = str | bytes | PathLike[str] | PathLike[bytes]
+URL: Final[type] = str | AnyHttpUrl[str] | AnyUrl[str] | FileUrl[str] | HttpUrl[str]
+
 url: Final[str] = "https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt"
 wordlist_path: Final[PATH] = "./hacking/sources/rockyou.txt"
 
